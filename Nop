@@ -1,0 +1,218 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+-- 🔑 KEY SYSTEM
+local correctKey = "YT"
+local unlocked = false
+local attempts = 0
+
+-- 📦 GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+-- 🔐 KEY FRAME
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0,250,0,150)
+keyFrame.Position = UDim2.new(0.5,-125,0.5,-75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local box = Instance.new("TextBox", keyFrame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,50)
+box.PlaceholderText = "Enter Key..."
+
+local status = Instance.new("TextLabel", keyFrame)
+status.Size = UDim2.new(1,0,0,30)
+status.Position = UDim2.new(0,0,0,100)
+status.TextColor3 = Color3.new(1,0,0)
+status.BackgroundTransparency = 1
+
+-- 📋 MAIN MENU
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,280,0,420)
+main.Position = UDim2.new(0.5,-140,1,0)
+main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.Visible = false
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "ADMIN MENU"
+title.TextColor3 = Color3.fromRGB(0,255,255)
+title.BackgroundTransparency = 1
+
+-- 🔘 TOGGLE
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,120,0,40)
+toggle.Position = UDim2.new(0,10,0,10)
+toggle.Text = "MENU"
+
+toggle.MouseButton1Click:Connect(function()
+	if unlocked then
+		main.Visible = not main.Visible
+	else
+		keyFrame.Visible = true
+	end
+end)
+
+-- ✔ KEY CHECK (ANTI HACK)
+box.FocusLost:Connect(function()
+	if box.Text == correctKey then
+		unlocked = true
+		status.Text = "Unlocked ✔"
+
+		keyFrame:Destroy()
+		main.Visible = true
+
+		TweenService:Create(main, TweenInfo.new(0.4), {
+			Position = UDim2.new(0.5,-140,0.5,-210)
+		}):Play()
+	else
+		attempts += 1
+		status.Text = "Wrong ❌"
+
+		if attempts >= 3 then
+			player:Kick("Too many wrong keys")
+		end
+	end
+end)
+
+-- 🧠 HUM
+local function getHum()
+	local c = player.Character
+	return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+-- ✈️ FLY
+local fly = false
+local function toggleFly()
+	local char = player.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+
+	fly = not fly
+
+	if fly then
+		local body = Instance.new("BodyVelocity", root)
+		body.MaxForce = Vector3.new(1,1,1) * 100000
+		body.Name = "FLY_FORCE"
+
+		task.spawn(function()
+			while fly and body.Parent do
+				body.Velocity = workspace.CurrentCamera.CFrame.LookVector * 50
+				task.wait()
+			end
+			body:Destroy()
+		end)
+	end
+end
+
+-- 👻 NOCLIP
+local noclip = false
+game:GetService("RunService").Stepped:Connect(function()
+	if noclip then
+		local char = player.Character
+		if char then
+			for _,v in pairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+		end
+	end
+end)
+
+-- 🏠 SAFE SPAWN
+local function safeSpawn()
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local spawn = workspace:FindFirstChildOfClass("SpawnLocation")
+
+	if root and spawn then
+		root.CFrame = spawn.CFrame + Vector3.new(0,5,0)
+	end
+end
+
+-- 🧱 BUILD SYSTEM
+local buildMode = false
+local wallsFolder = Instance.new("Folder", workspace)
+wallsFolder.Name = "Walls"
+
+local mouse = player:GetMouse()
+
+local function createWall(pos, normal)
+	local wall = Instance.new("Part")
+	wall.Size = Vector3.new(10,10,1)
+	wall.Anchored = true
+	wall.Color = Color3.fromRGB(0,255,255)
+	wall.CFrame = CFrame.new(pos,pos+normal)*CFrame.new(0,5,0)
+	wall.Parent = wallsFolder
+end
+
+local function clearWalls()
+	for _,v in pairs(wallsFolder:GetChildren()) do
+		v:Destroy()
+	end
+end
+
+local function buildHouse()
+	clearWalls()
+	local p = player.Character.HumanoidRootPart.Position
+
+	for i=0,3 do
+		createWall(p+Vector3.new(i*10,0,0),Vector3.new(0,0,-1))
+		createWall(p+Vector3.new(i*10,0,30),Vector3.new(0,0,1))
+	end
+
+	for i=0,3 do
+		createWall(p+Vector3.new(0,0,i*10),Vector3.new(1,0,0))
+		createWall(p+Vector3.new(30,0,i*10),Vector3.new(-1,0,0))
+	end
+end
+
+mouse.Button1Down:Connect(function()
+	if buildMode then
+		createWall(mouse.Hit.Position, mouse.Hit.Normal)
+	end
+end)
+
+-- 🔘 BUTTONS
+local function btn(text,y,func)
+	local b = Instance.new("TextButton", main)
+	b.Size = UDim2.new(1,-20,0,35)
+	b.Position = UDim2.new(0,10,0,y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	b.TextColor3 = Color3.fromRGB(0,255,255)
+	b.MouseButton1Click:Connect(func)
+end
+
+btn("🚀 SPEED",60,function()
+	local h=getHum()
+	if h then h.WalkSpeed=50 end
+end)
+
+btn("🦘 JUMP",100,function()
+	local h=getHum()
+	if h then h.JumpPower=100 end
+end)
+
+btn("💀 RESET",140,function()
+	local h=getHum()
+	if h then h.Health=0 end
+end)
+
+btn("⚡ NORMAL",180,function()
+	local h=getHum()
+	if h then h.WalkSpeed=16 h.JumpPower=50 end
+end)
+
+btn("✈️ FLY",220,toggleFly)
+btn("👻 NOCLIP",260,function() noclip=not noclip end)
+btn("🏠 SAFE SPAWN",300,safeSpawn)
+
+btn("🧱 BUILD MODE",340,function()
+	buildMode = not buildMode
+end)
+
+btn("🧹 CLEAR WALLS",380,clearWalls)
