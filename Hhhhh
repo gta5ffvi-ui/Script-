@@ -1,0 +1,130 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+-- 🔑 KEY SYSTEM
+local correctKey = "YT"
+local unlocked = false
+
+-- 📦 GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+-- 🔐 KEY FRAME
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0,250,0,150)
+keyFrame.Position = UDim2.new(0.5,-125,0.5,-75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local box = Instance.new("TextBox", keyFrame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,50)
+box.PlaceholderText = "Enter Key..."
+
+local status = Instance.new("TextLabel", keyFrame)
+status.Size = UDim2.new(1,0,0,30)
+status.Position = UDim2.new(0,0,0,100)
+status.TextColor3 = Color3.new(1,0,0)
+status.BackgroundTransparency = 1
+
+-- 📋 MAIN MENU
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,260,0,350)
+main.Position = UDim2.new(0.5,-130,1,0)
+main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.Visible = false
+
+-- 🔘 TOGGLE BUTTON
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,120,0,40)
+toggle.Position = UDim2.new(0,10,0,10)
+toggle.Text = "MENU"
+
+toggle.MouseButton1Click:Connect(function()
+	if not unlocked then
+		keyFrame.Visible = true
+		main.Visible = false
+	else
+		main.Visible = not main.Visible
+	end
+end)
+
+-- ✔ KEY CHECK
+box.FocusLost:Connect(function()
+	if box.Text == correctKey then
+		unlocked = true
+		status.Text = "Unlocked ✔"
+
+		wait(0.2)
+		keyFrame:Destroy()
+		main.Visible = true
+
+		TweenService:Create(main, TweenInfo.new(0.4), {
+			Position = UDim2.new(0.5,-130,0.5,-175)
+		}):Play()
+	else
+		status.Text = "Wrong ❌"
+	end
+end)
+
+-- 🎮 COMMAND SYSTEM (LOCAL SAFE)
+local cmd = Instance.new("TextBox", main)
+cmd.Size = UDim2.new(1,-20,0,35)
+cmd.Position = UDim2.new(0,10,0,60)
+cmd.PlaceholderText = "speed / jump / sit / stand / reset / normal"
+
+local info = Instance.new("TextLabel", main)
+info.Size = UDim2.new(1,0,0,25)
+info.Position = UDim2.new(0,0,0,95)
+info.TextColor3 = Color3.fromRGB(0,255,255)
+info.BackgroundTransparency = 1
+
+local function hum()
+	local c = player.Character
+	return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+local function run(t)
+	local h = hum()
+	if not h then return end
+
+	t = string.lower(t)
+
+	if t == "speed" then
+		h.WalkSpeed = 50
+		info.Text = "Speed ON"
+
+	elseif t == "jump" then
+		h.JumpPower = 100
+		info.Text = "Jump ON"
+
+	elseif t == "sit" then
+		h.Sit = true
+
+	elseif t == "stand" then
+		h.Sit = false
+
+	elseif t == "reset" then
+		h.Health = 0
+
+	elseif t == "normal" then
+		h.WalkSpeed = 16
+		h.JumpPower = 50
+
+	else
+		info.Text = "Unknown Command"
+	end
+end
+
+cmd.FocusLost:Connect(function(enter)
+	if enter then
+		run(cmd.Text)
+		cmd.Text = ""
+	end
+end)
+
+-- 🎮 TITLE
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "MY ADMIN MENU"
+title.TextColor3 = Color3.fromRGB(0,255,255)
+title.BackgroundTransparency = 1
