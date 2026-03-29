@@ -1,0 +1,212 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+-- 🔑 KEY
+local correctKey = "YT"
+local unlocked = false
+local attempts = 0
+
+-- 📦 GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+-- 🔐 KEY FRAME
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0,300,0,170)
+keyFrame.Position = UDim2.new(0.5,-150,0.5,-85)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local box = Instance.new("TextBox", keyFrame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,60)
+box.PlaceholderText = "Enter Key..."
+
+local status = Instance.new("TextLabel", keyFrame)
+status.Size = UDim2.new(1,0,0,30)
+status.Position = UDim2.new(0,0,0,120)
+status.TextColor3 = Color3.new(1,0,0)
+status.BackgroundTransparency = 1
+
+-- 📋 MAIN MENU (WIDE + BETTER UI)
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,380,0,500) -- 👈 أعرض
+main.Position = UDim2.new(0.5,-190,1,0)
+main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.Visible = false
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,45)
+title.Text = "ADMIN MENU PRO"
+title.TextColor3 = Color3.fromRGB(0,255,255)
+title.BackgroundTransparency = 1
+
+-- 🔘 TOGGLE
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,140,0,45)
+toggle.Position = UDim2.new(0,10,0,10)
+toggle.Text = "MENU"
+
+toggle.MouseButton1Click:Connect(function()
+	if unlocked then
+		main.Visible = not main.Visible
+	else
+		keyFrame.Visible = true
+	end
+end)
+
+-- ✔ KEY CHECK (ANTI EXPLOIT)
+box.FocusLost:Connect(function()
+	if box.Text == correctKey then
+		unlocked = true
+		status.Text = "Unlocked ✔"
+
+		keyFrame:Destroy()
+		main.Visible = true
+
+		TweenService:Create(main, TweenInfo.new(0.4), {
+			Position = UDim2.new(0.5,-190,0.5,-250)
+		}):Play()
+	else
+		attempts += 1
+		status.Text = "Wrong ❌"
+
+		if attempts >= 3 then
+			player:Kick("Too many wrong keys")
+		end
+	end
+end)
+
+-- 🧠 HUM
+local function getHum()
+	local c = player.Character
+	return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+-- ❌ NO RESPawn / NO KILL RESET SYSTEM
+player.CharacterAdded:Connect(function(char)
+	task.wait(1)
+	local hum = char:FindFirstChildOfClass("Humanoid")
+
+	if hum then
+		hum.Died:Connect(function()
+			task.wait(1)
+			player:LoadCharacter() -- يرجعه بدون فقدان سيستم
+		end)
+	end
+end)
+
+-- ✈️ FLY
+local fly = false
+local function toggleFly()
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
+	fly = not fly
+
+	if fly then
+		local body = Instance.new("BodyVelocity", root)
+		body.MaxForce = Vector3.new(1,1,1)*100000
+		body.Velocity = Vector3.zero
+		body.Name = "FLY"
+
+		task.spawn(function()
+			while fly and body.Parent do
+				body.Velocity = workspace.CurrentCamera.CFrame.LookVector * 60
+				task.wait()
+			end
+			body:Destroy()
+		end)
+	end
+end
+
+-- 👻 NOCLIP
+local noclip = false
+game:GetService("RunService").Stepped:Connect(function()
+	if noclip then
+		local char = player.Character
+		if char then
+			for _,v in pairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+		end
+	end
+end)
+
+-- 📋 SCROLL MENU (أزرار كثيرة بدون زحمة)
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1,-20,1,-60)
+scroll.Position = UDim2.new(0,10,0,50)
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,6)
+
+-- 🔘 BUTTON SYSTEM
+local function addButton(text, callback)
+	local b = Instance.new("TextButton", scroll)
+	b.Size = UDim2.new(1,0,0,40)
+	b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	b.TextColor3 = Color3.fromRGB(0,255,255)
+	b.Text = text
+
+	b.MouseButton1Click:Connect(callback)
+
+	task.wait()
+	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+end
+
+-- 🚀 FEATURES
+addButton("🚀 SPEED", function()
+	local h=getHum()
+	if h then h.WalkSpeed=60 end
+end)
+
+addButton("🦘 JUMP", function()
+	local h=getHum()
+	if h then h.JumpPower=120 end
+end)
+
+addButton("⚡ NORMAL", function()
+	local h=getHum()
+	if h then h.WalkSpeed=16 h.JumpPower=50 end
+end)
+
+addButton("✈️ FLY", toggleFly)
+
+addButton("👻 NOCLIP", function()
+	noclip = not noclip
+end)
+
+addButton("💀 RESET", function()
+	local h=getHum()
+	if h then h.Health=0 end
+end)
+
+addButton("🏠 SAFE SPAWN", function()
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local spawn = workspace:FindFirstChildOfClass("SpawnLocation")
+	if root and spawn then
+		root.CFrame = spawn.CFrame + Vector3.new(0,5,0)
+	end
+end)
+
+-- 🔥 EXTRA FEATURES
+addButton("🔥 SUPER SPEED", function()
+	local h=getHum()
+	if h then h.WalkSpeed=100 end
+end)
+
+addButton("🧲 GRAVITY LOW", function()
+	workspace.Gravity = 50
+end)
+
+addButton("🌍 NORMAL GRAVITY", function()
+	workspace.Gravity = 196.2
+end)
