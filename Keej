@@ -1,0 +1,63 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+
+gui.Name = "MainMenu"
+
+-- 🟦 Frame
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 220, 0, 260)
+frame.Position = UDim2.new(0.05, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+-- 🟩 Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "MENU"
+title.TextColor3 = Color3.fromRGB(0,255,255)
+title.BackgroundTransparency = 1
+
+-- 🟨 Speed Button
+local speed = Instance.new("TextButton", frame)
+speed.Size = UDim2.new(1,0,0,40)
+speed.Position = UDim2.new(0,0,0,50)
+speed.Text = "Speed +"
+
+-- 🟧 Jump Button
+local jump = Instance.new("TextButton", frame)
+jump.Size = UDim2.new(1,0,0,40)
+jump.Position = UDim2.new(0,0,0,100)
+jump.Text = "Jump +"
+
+-- 🟥 Reset Button
+local reset = Instance.new("TextButton", frame)
+reset.Size = UDim2.new(1,0,0,40)
+reset.Position = UDim2.new(0,0,0,150)
+reset.Text = "Reset Stats"
+
+-- ⚙️ Functions
+local function getHumanoid()
+	local char = player.Character
+	return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+speed.MouseButton1Click:Connect(function()
+	local h = getHumanoid()
+	if h then
+		h.WalkSpeed = 60
+	end
+end)
+
+jump.MouseButton1Click:Connect(function()
+	local h = getHumanoid()
+	if h then
+		h.JumpPower = 120
+	end
+end)
+
+reset.MouseButton1Click:Connect(function()
+	local h = getHumanoid()
+	if h then
+		h.WalkSpeed = 16
+		h.JumpPower = 50
+	end
+end)
