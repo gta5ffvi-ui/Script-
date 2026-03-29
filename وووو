@@ -1,0 +1,101 @@
+local player = game.Players.LocalPlayer
+
+-- GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+-- زر فتح/إغلاق
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,120,0,35)
+toggle.Position = UDim2.new(0,10,0,10)
+toggle.Text = "Open Menu"
+
+-- القائمة
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,260)
+frame.Position = UDim2.new(0.5,-110,0.5,-130)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Visible = false
+
+local open = false
+toggle.MouseButton1Click:Connect(function()
+	open = not open
+	frame.Visible = open
+	toggle.Text = open and "Close Menu" or "Open Menu"
+end)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,30)
+title.Text = "Self Menu"
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+
+-- وظائف
+local function getHum()
+	local char = player.Character
+	return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+-- زر عادي
+local function createBtn(text, y, func)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(1,-20,0,35)
+	btn.Position = UDim2.new(0,10,0,y)
+	btn.Text = text
+	btn.Parent = frame
+	btn.MouseButton1Click:Connect(func)
+end
+
+-- 🔴 KICK CONFIRM UI
+local confirmFrame = Instance.new("Frame", gui)
+confirmFrame.Size = UDim2.new(0,200,0,120)
+confirmFrame.Position = UDim2.new(0.5,-100,0.5,-60)
+confirmFrame.BackgroundColor3 = Color3.fromRGB(40,0,0)
+confirmFrame.Visible = false
+
+local confirmText = Instance.new("TextLabel", confirmFrame)
+confirmText.Size = UDim2.new(1,0,0,50)
+confirmText.Text = "Are you sure?"
+confirmText.TextColor3 = Color3.new(1,1,1)
+confirmText.BackgroundTransparency = 1
+
+local yesBtn = Instance.new("TextButton", confirmFrame)
+yesBtn.Size = UDim2.new(0.5,0,0,40)
+yesBtn.Position = UDim2.new(0,0,0,70)
+yesBtn.Text = "YES"
+
+local noBtn = Instance.new("TextButton", confirmFrame)
+noBtn.Size = UDim2.new(0.5,0,0,40)
+noBtn.Position = UDim2.new(0.5,0,0,70)
+noBtn.Text = "NO"
+
+-- زر Kick
+createBtn("Kick Myself", 40, function()
+	confirmFrame.Visible = true
+end)
+
+yesBtn.MouseButton1Click:Connect(function()
+	player:Kick("You kicked yourself 😂")
+end)
+
+noBtn.MouseButton1Click:Connect(function()
+	confirmFrame.Visible = false
+end)
+
+-- Reset
+createBtn("Reset", 90, function()
+	local h = getHum()
+	if h then h.Health = 0 end
+end)
+
+-- Speed
+createBtn("Speed x2", 140, function()
+	local h = getHum()
+	if h then h.WalkSpeed = 50 end
+end)
+
+createBtn("Normal Speed", 190, function()
+	local h = getHum()
+	if h then h.WalkSpeed = 16 end
+end)
