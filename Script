@@ -1,0 +1,268 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+-- 🔑 KEY SYSTEM
+local correctKey = "YT"
+local unlocked = false
+local attempts = 0
+
+-- 📦 GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+-- 🔐 KEY FRAME
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0.8,0,0.25,0)
+keyFrame.Position = UDim2.new(0.5,0,0.5,0)
+keyFrame.AnchorPoint = Vector2.new(0.5,0.5)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local box = Instance.new("TextBox", keyFrame)
+box.Size = UDim2.new(0.9,0,0.3,0)
+box.Position = UDim2.new(0.05,0,0.3,0)
+box.PlaceholderText = "Enter Key..."
+
+local status = Instance.new("TextLabel", keyFrame)
+status.Size = UDim2.new(1,0,0.2,0)
+status.Position = UDim2.new(0,0,0.7,0)
+status.TextColor3 = Color3.new(1,0,0)
+status.BackgroundTransparency = 1
+
+-- 📋 MAIN MENU
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0.9,0,0.8,0)
+main.Position = UDim2.new(0.5,0,1,0)
+main.AnchorPoint = Vector2.new(0.5,0.5)
+main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.Visible = false
+main.ClipsDescendants = true
+
+-- ✨ OPEN / CLOSE ANIMATION
+local function openMenu(state)
+	local goal = {}
+	goal.Position = state and UDim2.new(0.5,0,0.5,0) or UDim2.new(0.5,0,1,0)
+	TweenService:Create(main, TweenInfo.new(0.35), goal):Play()
+end
+
+-- 📱 DRAG (Mobile + PC)
+local dragging = false
+local startPos, dragStart
+
+main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+-- 🔘 TOGGLE BUTTON
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0.3,0,0.07,0)
+toggle.Position = UDim2.new(0.05,0,0.02,0)
+toggle.Text = "MENU"
+
+toggle.MouseButton1Click:Connect(function()
+	if unlocked then
+		main.Visible = not main.Visible
+		openMenu(main.Visible)
+	else
+		keyFrame.Visible = true
+	end
+end)
+
+-- ✔ KEY CHECK
+box.FocusLost:Connect(function()
+	if box.Text == correctKey then
+		unlocked = true
+		keyFrame:Destroy()
+		main.Visible = true
+		openMenu(true)
+	else
+		attempts += 1
+		status.Text = "Wrong ❌"
+		if attempts >= 3 then
+			player:Kick("Too many wrong keys")
+		end
+	end
+end)
+
+-- 🧠 HUM
+local function hum()
+	local c = player.Character
+	return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+------------------------------------------------
+-- 🧠 FIX MOVEMENT SYSTEM (Important)
+------------------------------------------------
+local function resetMovement()
+	local char = player.Character
+	local h = char and char:FindFirstChildOfClass("Humanoid")
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+
+	if h then
+		h:Move(Vector3.zero, false)
+		h.WalkSpeed = 16
+		h.JumpPower = 50
+		h.AutoRotate = true
+	end
+
+	if root then
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.AssemblyAngularVelocity = Vector3.zero
+	end
+end
+
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	resetMovement()
+end)
+
+------------------------------------------------
+-- 🧱 BUILD SYSTEM
+------------------------------------------------
+local buildFolder = Instance.new("Folder", workspace)
+buildFolder.Name = "Builds"
+
+local function createWall(pos)
+	local p = Instance.new("Part")
+	p.Size = Vector3.new(10,10,1)
+	p.Anchored = true
+	p.Color = Color3.fromRGB(0,255,255)
+	p.Position = pos
+	p.Parent = buildFolder
+end
+
+local function clearBuild()
+	for _,v in pairs(buildFolder:GetChildren()) do
+		v:Destroy()
+	end
+end
+
+local function autoHouse()
+	clearBuild()
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
+	local p = root.Position
+
+	for i=0,3 do
+		createWall(p + Vector3.new(i*10,0,0))
+		createWall(p + Vector3.new(i*10,0,30))
+	end
+
+	for i=0,3 do
+		createWall(p + Vector3.new(0,0,i*10))
+		createWall(p + Vector3.new(30,0,i*10))
+	end
+end
+
+------------------------------------------------
+-- 📋 TAB SYSTEM
+------------------------------------------------
+local tabBar = Instance.new("Frame", main)
+tabBar.Size = UDim2.new(1,0,0.1,0)
+tabBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1,0,0.9,0)
+scroll.Position = UDim2.new(0,0,0.1,0)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+
+local layout = Instance.new("UIListLayout", scroll)
+
+local function clear()
+	for _,v in pairs(scroll:GetChildren()) do
+		if v:IsA("TextButton") then v:Destroy() end
+	end
+end
+
+local function button(name, func)
+	local b = Instance.new("TextButton", scroll)
+	b.Size = UDim2.new(1,0,0,45)
+	b.Text = name
+	b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	b.TextColor3 = Color3.fromRGB(0,255,255)
+	b.MouseButton1Click:Connect(func)
+
+	task.wait()
+	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+end
+
+------------------------------------------------
+-- 🎮 TABS
+------------------------------------------------
+local function PlayerTab()
+	clear()
+
+	button("🚀 SPEED", function()
+		local h = hum()
+		if h then h.WalkSpeed = 60 end
+	end)
+
+	button("🦘 JUMP", function()
+		local h = hum()
+		if h then h.JumpPower = 120 end
+	end)
+
+	button("🧠 FIX MOVEMENT", function()
+		resetMovement()
+	end)
+end
+
+local function BuildTab()
+	clear()
+
+	button("🧱 BUILD MODE", function()
+		buildMode = not buildMode
+	end)
+
+	button("🏠 AUTO HOUSE", autoHouse)
+	button("🧹 CLEAR BUILD", clearBuild)
+end
+
+local function FunTab()
+	clear()
+
+	button("💥 RESET", function()
+		local h = hum()
+		if h then h.Health = 0 end
+	end)
+end
+
+------------------------------------------------
+-- 🔘 TAB BUTTONS
+------------------------------------------------
+local function tab(name, func, x)
+	local b = Instance.new("TextButton", tabBar)
+	b.Size = UDim2.new(0.33,0,1,0)
+	b.Position = UDim2.new(x,0,0,0)
+	b.Text = name
+	b.MouseButton1Click:Connect(func)
+end
+
+tab("PLAYER", PlayerTab, 0)
+tab("BUILD", BuildTab, 0.33)
+tab("FUN", FunTab, 0.66)
+
+PlayerTab()
