@@ -1,0 +1,68 @@
+-- 🎮 COMMAND SYSTEM (ADD-ON ONLY)
+
+local cmdBox = Instance.new("TextBox", main)
+cmdBox.Size = UDim2.new(1, -20, 0, 35)
+cmdBox.Position = UDim2.new(0, 10, 0, 60)
+cmdBox.PlaceholderText = "Commands: speed / jump / sit / stand / reset / sprint / normal"
+cmdBox.Text = ""
+cmdBox.BackgroundColor3 = Color3.fromRGB(25,25,25)
+cmdBox.TextColor3 = Color3.fromRGB(255,255,255)
+
+local info = Instance.new("TextLabel", main)
+info.Size = UDim2.new(1, 0, 0, 25)
+info.Position = UDim2.new(0, 0, 0, 95)
+info.Text = "COMMAND READY"
+info.TextColor3 = Color3.fromRGB(0,255,255)
+info.BackgroundTransparency = 1
+
+local function getHum()
+	local char = player.Character
+	return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+local function runCommand(text)
+	local h = getHum()
+	if not h then return end
+
+	text = string.lower(text)
+
+	if text == "speed" then
+		h.WalkSpeed = 60
+		info.Text = "Speed ON"
+
+	elseif text == "jump" then
+		h.JumpPower = 120
+		info.Text = "Jump ON"
+
+	elseif text == "sit" then
+		h.Sit = true
+		info.Text = "Sitting"
+
+	elseif text == "stand" then
+		h.Sit = false
+		info.Text = "Standing"
+
+	elseif text == "reset" then
+		h.Health = 0
+		info.Text = "Reset"
+
+	elseif text == "sprint" then
+		h.WalkSpeed = 30
+		info.Text = "Sprint ON"
+
+	elseif text == "normal" then
+		h.WalkSpeed = 16
+		h.JumpPower = 50
+		info.Text = "Normal Mode"
+
+	else
+		info.Text = "Unknown Command"
+	end
+end
+
+cmdBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then
+		runCommand(cmdBox.Text)
+		cmdBox.Text = ""
+	end
+end)
