@@ -1,0 +1,120 @@
+-- 🧠 EXTRA FEATURES (DO NOT EDIT ORIGINAL SCRIPT)
+
+local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+-- 🔄 AUTO UPDATE CHARACTER
+player.CharacterAdded:Connect(function(c)
+	char = c
+end)
+
+-- 🛡️ INVISIBLE (Toggle)
+local invisible = false
+
+local function setInvisible(state)
+	if not char then return end
+	for _,v in pairs(char:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.Transparency = state and 1 or 0
+			v.CanCollide = not state
+		elseif v:IsA("Decal") then
+			v.Transparency = state and 1 or 0
+		end
+	end
+end
+
+-- ⚡ SUPER SPEED BOOST (safe override)
+local function boostSpeed()
+	local h = char and char:FindFirstChildOfClass("Humanoid")
+	if h then
+		h.WalkSpeed = 100
+	end
+end
+
+-- 🦘 SUPER JUMP
+local function boostJump()
+	local h = char and char:FindFirstChildOfClass("Humanoid")
+	if h then
+		h.JumpPower = 150
+	end
+end
+
+-- ✈️ IMPROVED FLY (anti-detect smoother)
+local flyForce, flyGyro
+local flying = false
+
+local function advancedFly()
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
+	flying = not flying
+
+	if flying then
+		flyForce = Instance.new("BodyVelocity")
+		flyForce.MaxForce = Vector3.new(1,1,1) * 999999
+		flyForce.Velocity = Vector3.zero
+		flyForce.Parent = root
+
+		flyGyro = Instance.new("BodyGyro")
+		flyGyro.MaxTorque = Vector3.new(1,1,1) * 999999
+		flyGyro.CFrame = root.CFrame
+		flyGyro.Parent = root
+
+		task.spawn(function()
+			while flying and flyForce and flyGyro do
+				local cam = workspace.CurrentCamera
+				flyForce.Velocity = cam.CFrame.LookVector * 60
+				flyGyro.CFrame = cam.CFrame
+				task.wait()
+			end
+
+			if flyForce then flyForce:Destroy() end
+			if flyGyro then flyGyro:Destroy() end
+		end)
+	end
+end
+
+-- 🧱 NOCLIP IMPROVED
+RunService.Stepped:Connect(function()
+	if noclip then
+		if char then
+			for _,v in pairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+		end
+	end
+end)
+
+-- 🎮 EXTRA KEYBINDS (optional)
+UIS = game:GetService("UserInputService")
+
+UIS.InputBegan:Connect(function(input, gp)
+	if gp then return end
+
+	if input.KeyCode == Enum.KeyCode.G then
+		boostSpeed()
+	elseif input.KeyCode == Enum.KeyCode.H then
+		boostJump()
+	elseif input.KeyCode == Enum.KeyCode.J then
+		advancedFly()
+	elseif input.KeyCode == Enum.KeyCode.K then
+		invisible = not invisible
+		setInvisible(invisible)
+	end
+end)
+
+-- 🧪 AUTO HEAL (optional)
+task.spawn(function()
+	while true do
+		task.wait(3)
+		local h = char and char:FindFirstChildOfClass("Humanoid")
+		if h and h.Health < h.MaxHealth then
+			h.Health = math.min(h.Health + 5, h.MaxHealth)
+		end
+	end
+end)
