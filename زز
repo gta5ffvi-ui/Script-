@@ -1,0 +1,53 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "DashGUI"
+
+-- 🔘 زر
+local button = Instance.new("TextButton", gui)
+button.Size = UDim2.new(0, 220, 0, 60)
+button.Position = UDim2.new(0.5, -110, 0.8, 0)
+button.Text = "⚡ Dash"
+button.BackgroundColor3 = Color3.fromRGB(20,20,20)
+button.TextColor3 = Color3.fromRGB(0,255,255)
+button.TextScaled = true
+
+-- ⏱️ كولداون
+local cooldown = false
+
+-- ⚙️ وظيفة الداش
+local function dash()
+	local char = player.Character
+	if not char then return end
+
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
+	-- اتجاه الأمام
+	local forward = root.CFrame.LookVector
+
+	-- تأثير سرعة (اختياري)
+	local vel = Instance.new("BodyVelocity")
+	vel.Velocity = forward * 80
+	vel.MaxForce = Vector3.new(100000, 0, 100000)
+	vel.Parent = root
+
+	-- حذف التأثير بعد لحظة (يعطي دفعة سريعة فقط)
+	game.Debris:AddItem(vel, 0.15)
+
+	-- إيقاف قصير (إحساس توقف بعد الداش)
+	task.wait(0.15)
+end
+
+-- 🔘 الضغط
+button.MouseButton1Click:Connect(function()
+	if cooldown then return end
+	cooldown = true
+
+	dash()
+
+	button.Text = "⏳ Cooldown"
+	task.wait(1.2)
+
+	button.Text = "⚡ Dash"
+	cooldown = false
+end)
