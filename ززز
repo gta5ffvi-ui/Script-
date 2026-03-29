@@ -1,0 +1,83 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+local correctKey = "YT"
+
+-- حفظ حالة الدخول
+local isUnlocked = false
+
+-- GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+-- KEY FRAME
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0,250,0,150)
+keyFrame.Position = UDim2.new(0.5,-125,0.5,-75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+local title = Instance.new("TextLabel", keyFrame)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "ENTER KEY"
+title.TextColor3 = Color3.fromRGB(0,255,255)
+title.BackgroundTransparency = 1
+
+local box = Instance.new("TextBox", keyFrame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,50)
+box.PlaceholderText = "Type Key..."
+
+local status = Instance.new("TextLabel", keyFrame)
+status.Size = UDim2.new(1,0,0,30)
+status.Position = UDim2.new(0,0,0,100)
+status.TextColor3 = Color3.new(1,0,0)
+status.BackgroundTransparency = 1
+
+-- MAIN MENU
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,260,0,350)
+main.Position = UDim2.new(0.5,-130,1,0)
+main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.Visible = false
+
+-- زر فتح/إغلاق
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,120,0,40)
+toggle.Position = UDim2.new(0,10,0,10)
+toggle.Text = "MENU"
+
+-- فتح القائمة
+toggle.MouseButton1Click:Connect(function()
+	if not isUnlocked then
+		keyFrame.Visible = true
+		main.Visible = false
+	else
+		main.Visible = not main.Visible
+	end
+end)
+
+-- تحقق من الكود
+box.FocusLost:Connect(function()
+	if box.Text == correctKey then
+		isUnlocked = true
+		status.Text = "Correct ✔"
+
+		wait(0.3)
+
+		keyFrame:Destroy()
+		main.Visible = true
+
+		TweenService:Create(main, TweenInfo.new(0.4), {
+			Position = UDim2.new(0.5,-130,0.5,-175)
+		}):Play()
+	else
+		status.Text = "Wrong ❌"
+	end
+end)
+
+-- مثال محتوى القائمة
+local label = Instance.new("TextLabel", main)
+label.Size = UDim2.new(1,0,0,40)
+label.Text = "MENU UNLOCKED"
+label.TextColor3 = Color3.fromRGB(0,255,255)
+label.BackgroundTransparency = 1
