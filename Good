@@ -1,0 +1,49 @@
+local player = game.Players.LocalPlayer
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0.5, -100, 0.5, -60)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Text = "Speed Menu"
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+title.Parent = frame
+
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -20, 0, 40)
+speedButton.Position = UDim2.new(0, 10, 0, 40)
+speedButton.Text = "Speed x2"
+speedButton.Parent = frame
+
+local normalButton = Instance.new("TextButton")
+normalButton.Size = UDim2.new(1, -20, 0, 30)
+normalButton.Position = UDim2.new(0, 10, 0, 85)
+normalButton.Text = "Normal Speed"
+normalButton.Parent = frame
+
+speedButton.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 50
+        end
+    end
+end)
+
+normalButton.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
+    end
+end)
